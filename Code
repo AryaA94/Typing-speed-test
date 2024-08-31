@@ -1,0 +1,111 @@
+import random, sys, time
+from getkey import getkey
+
+# color palette
+TEXT_RESET = "\033[0m"
+TEXT_DIM = "\033[2m"
+TEXT_UNDERLINE = "\033[4m"
+TEXT_CYAN = "\033[1;96m"
+TEXT_MAGENTA = "\033[1;95m"
+TEXT_YELLOW = "\033[1;93m"
+
+# typing passages
+passages = [
+  "Venture into the mystical realm of bioluminescent forests, where fireflies illuminate the darkness with their ethereal glow.",
+
+  "Unravel the secrets of ancient mystics who sought to harness the power of the universe, blending spirituality and science in their quest for enlightenment.",
+
+  "Witness the breathtaking spectacle of aurora australis, as solar winds paint the night sky with vibrant curtains of green, purple, and red in Earth's polar regions.",
+
+  "Delve into the fascinating world of synesthesia, where some individuals experience a blending of senses, tasting colors or seeing sounds in a unique neurological phenomenon.",
+
+  "Embark on a journey through the microscopic realm of extremophiles, resilient creatures capable of surviving extreme conditions from the depths of the ocean to the vacuum of space.",
+
+  "Discover the art of mindfulness meditation, where immersing oneself in the present moment can reduce stress, boost immunity, and enhance overall well-being.",
+
+]
+
+def print_text(text):
+  sys.stdout.write(text)
+def clear_screen():
+  sys.stdout.write("\033[2J\033[H")
+
+def countdown_timer(num, text):
+  for i in range(num, 0, -1):
+    clear_screen()
+    print(TEXT_RESET + " Passage is: " + TEXT_MAGENTA + TEXT_UNDERLINE + text + TEXT_RESET)
+    print(str(i))
+    time.sleep(1)
+
+def play_game(skip_intro=False):
+  if not skip_intro:
+    ready = input(TEXT_UNDERLINE + TEXT_YELLOW + "Welcome to a typing speed test.\n\n" + TEXT_RESET +  "Rules are the same as any normal typing test. Type each letter individually and if you don't type in the correct input the test won't proceed until you input the correct letter.\n\nPress ENTER to start the test")
+
+  # selects a random passage
+  passage = random.choice(passages)
+
+  countdown_timer(3, passage)
+
+  complete = False
+  current_letter = 0
+  incorrect = 0
+  start_time = time.time()
+  while not complete:
+    if current_letter > 0:
+      # dim all the letters before the current one
+      done_string = TEXT_RESET + TEXT_DIM + passage[:current_letter]
+    # underline the current letter
+    current = TEXT_UNDERLINE + TEXT_CYAN + passage[current_letter]
+    # reset the color for all the ones after the current letter
+    after_current = TEXT_RESET + passage[current_letter+1:]
+
+    clear_screen()
+    if current_letter == 0:
+      print(current + after_current)
+    else:
+      print(done_string + current + after_current)
+
+    # detects what key is pressed
+    input_char = getkey()
+    while input_char != passage[current_letter]:
+      # if you put the wrong letter in
+      incorrect += 1
+      # underline the current letter, showing that you have got it wrong
+      current = TEXT_UNDERLINE + TEXT_MAGENTA + passage[current_letter]
+      clear_screen()
+      if current_letter == 0:
+        print(current + after_current)
+      else:
+        print(done_string + current + after_current)
+
+      # input the letter again
+      input_char = getkey()
+
+    # have they gone through the whole passage
+    if current_letter >= len(passage)-1:
+      complete = True
+
+    # increments the current letter variable
+    current_letter += 1
+
+  # all the calculations
+  end_time = time.time()
+  clear_screen()
+  time_taken = (end_time-start_time)/60
+
+  wpm = round((len(passage)/5)/time_taken)
+  accuracy = round(100-((incorrect/(len(passage) + incorrect)) * 100))
+
+  text = TEXT_RESET+ "Well done!\n\nWPM: " + TEXT_YELLOW + str(wpm) + TEXT_RESET + "\nAccuracy: " + TEXT_YELLOW + str(accuracy) + "%" + TEXT_RESET
+  print(text)
+
+  print(TEXT_YELLOW + "Have an amazing day!")
+
+while True:
+  play_game()
+  print(TEXT_UNDERLINE + TEXT_YELLOW + "Enter 'y' to play again.\n" + TEXT_RESET)
+  play_again = input()
+  if play_again.lower() == 'y':
+    continue
+  else:
+    break
